@@ -27,7 +27,7 @@ class Loader:
                 self._update_config()
                 return self._cached_config
 
-            if (datetime.utcnow() - self._load_time).seconds < self.idle_seconds:
+            if (datetime.utcnow() - self._load_time).seconds < Loader.idle_seconds:
                 return self._cached_config
 
             self._update_config()

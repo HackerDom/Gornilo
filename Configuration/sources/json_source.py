@@ -3,6 +3,6 @@ from json import load
 
 
 class JsonSource(Source):
-    def get(self, path):
+    def get(self, path) -> dict:
         with open(path) as file:
             return load(file)

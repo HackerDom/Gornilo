@@ -4,7 +4,7 @@ from time import sleep
 
 
 class LoadersPool:
-    actualize_period_seconds = 2
+    actualize_period_seconds = 1
 
     def __init__(self):
         self._loaders_paths = dict()
