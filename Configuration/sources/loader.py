@@ -19,10 +19,7 @@ class Loader:
         self._update_config()
 
     def __getitem__(self, item):
-        try:
-            return self._cached_config[item]
-        except KeyError:
-            return None
+        return self._cached_config[item]
 
     def load_config(self) -> dict:
         try:
