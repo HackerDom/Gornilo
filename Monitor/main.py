@@ -1,11 +1,16 @@
 from time import sleep
 from Monitor.config import MonitorConfiguration
 
-# just for testing hot properties
+
+saved_instance = MonitorConfiguration()
 
 while True:
-    config = MonitorConfiguration()
-    print(config.api_key)
-    print(config.indexer)
-    print(MonitorConfiguration.api_key.fget(""))
+    dynamic_instance = MonitorConfiguration()
+    print(f"""
+        Saved key = {saved_instance.api_key}
+        Dynamic key = {dynamic_instance.api_key}
+        
+        Saved index = {saved_instance.indexer}
+        Dynamic key = {dynamic_instance.indexer}
+    """)
     sleep(1)
