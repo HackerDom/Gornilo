@@ -102,7 +102,7 @@ class Checker:
         finally:
             print(result._public_message, file=sys.stdout)
             print(result._private_message, file=sys.stderr)
-            exit(result._code)
+            sys.exit(result._code)
 
     @staticmethod
     def __run(*args) -> Verdict:
