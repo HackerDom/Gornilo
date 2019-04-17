@@ -16,7 +16,7 @@ def check_service(host: str) -> Verdict:
 def put_flag_into_the_service(host: str, flag_id: str, flag: str) -> Verdict:
     ...  # your code
 
-    return Verdict.OK()
+    return Verdict.OK("my_new_flag_id")
 
 
 @Checker.define_get(1)
