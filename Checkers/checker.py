@@ -12,14 +12,14 @@ def check_service(host: str) -> Verdict:
     return Verdict.OK()
 
 
-@Checker.define_put(1)
+@Checker.define_put(vuln_num=1)
 def put_flag_into_the_service(host: str, flag_id: str, flag: str) -> Verdict:
     ...  # your code
 
     return Verdict.OK("my_new_flag_id")
 
 
-@Checker.define_get(1)
+@Checker.define_get(vuln_num=1)
 def get_flag_from_the_service(host: str, flag_id: str, flag: str) -> Verdict:
     ...  # your code
 
