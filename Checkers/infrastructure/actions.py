@@ -2,7 +2,7 @@ import sys
 if sys.version_info[:2] < (3, 6):
     raise RuntimeError("Python version should be 3.6+")
 
-
+import inspect
 from typing import Tuple, Type
 from .verdict import Verdict
 from traceback import format_exc
@@ -22,27 +22,25 @@ class Checker:
 
     @staticmethod
     def __check_function(func: callable, annotations_mask=None or Tuple[Type]):
-
         func_name = func.__code__.co_name
-        func_annotations = func.__annotations__
+        func_args_spec = inspect.getfullargspec(func)
 
-        if func_annotations.get("return") != Verdict:
+        if func_args_spec.annotations.get("return") != Verdict:
             raise TypeError(f"Checker function ({func_name}) should return {Verdict} object!")
 
         if annotations_mask is None:
             return
 
-        arg_names = func.__code__.co_varnames[:func.__code__.co_argcount]
-
-        if len(annotations_mask) != len(arg_names):
+        if len(annotations_mask) != len(func_args_spec.args):
             raise TypeError(f"Checker function ({func_name}) should have {len(annotations_mask)} arg(s)!")
 
         for i, annotated_type in enumerate(annotations_mask):
-            current_arg = arg_names[i]
-            current_arg_type = func_annotations.get(current_arg)
+            current_arg = func_args_spec.args[i]
+            current_arg_type = func_args_spec.annotations.get(current_arg)
             if current_arg_type != annotated_type:
-                raise TypeError(f"Checker's' function ({func_name}) {i + 1} argument should be {annotated_type} type,"
-                                f" not {current_arg_type}!")
+                raise TypeError(f"Checker function ({func_name}) argument type at {i + 1} pos "
+                                f"should be {annotated_type}, "
+                                f"not {current_arg_type}!")
 
     @classmethod
     def __register_action(cls, action_name: str, action: callable, action_period: int = None):
@@ -92,11 +90,11 @@ class Checker:
         result = Verdict.CHECKER_ERROR("", "Something gone wrong")
         try:
             if not args:
-                args = sys.argv
+                args = sys.argv[1:]
             result = Checker.__run(*args)
 
-            if result is None:
-                result = Verdict.CHECKER_ERROR("", f'Checker function returned None value, we need to fix it!')
+            if type(result) != Verdict:
+                result = Verdict.CHECKER_ERROR("", f'Checker function returned not Verdict value, we need to fix it!')
         except Exception as e:
             result = Verdict.CHECKER_ERROR('', f"Checker caught an error: {e},\n {format_exc()}")
         finally:
@@ -106,36 +104,36 @@ class Checker:
 
     @staticmethod
     def __run(*args) -> Verdict:
-        commands = {CHECK, PUT, GET, INFO}
+        commands = [CHECK, PUT, GET, INFO]
 
-        if len(args) < 2:
-            raise ValueError("Expected 2 or more args!")
-        command = args[1].upper()
+        if len(args) < 1:
+            raise ValueError("Expected 1 or more args!")
+        command = args[0].upper()
         if command not in commands:
             raise ValueError(f"Unknown ({command}) command! (Expected one of ({','.join(commands)})")
 
         if command == INFO:
             return Verdict.OK(Checker.INFO)
 
-        if len(args) < 3:
-            raise ValueError("Can't find 'hostname' arg! (Expected 3 or more args)")
-        hostname = args[2]
+        if len(args) < 2:
+            raise ValueError("Can't find 'hostname' arg! (Expected 2 or more args)")
+        hostname = args[1]
 
         callable_check = Checker.__actions_handlers[CHECK]
         if command == CHECK and callable(callable_check):
             return callable_check(hostname)
 
+        if len(args) < 3:
+            raise ValueError("Can't find 'flag_id' arg! (Expected 3 or more args)")
+        flag_id = args[2]
+
         if len(args) < 4:
-            raise ValueError("Can't find 'flag_id' arg! (Expected 4 or more args)")
-        flag_id = args[3]
+            raise ValueError("Can't find 'flag' arg (Expected 4 or more args)")
+        flag = args[3]
 
         if len(args) < 5:
-            raise ValueError("Can't find 'flag' arg (Expected 5 or more args)")
-        flag = args[4]
-
-        if len(args) < 6:
-            raise ValueError("Can't find 'vuln_id' arg (Expected 6 or more args)")
-        vuln_id = args[5]
+            raise ValueError("Can't find 'vuln_id' arg (Expected 5 or more args)")
+        vuln_id = args[4]
         try:
             vuln_id = int(vuln_id)
             assert vuln_id > 0
