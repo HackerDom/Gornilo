@@ -103,37 +103,35 @@ class Checker:
             sys.exit(result._code)
 
     @staticmethod
-    def __run(*args) -> Verdict:
+    def __run(command=None, hostname=None, flag_id=None, flag=None, vuln_id=None) -> Verdict:
         commands = [CHECK, PUT, GET, INFO]
 
-        if len(args) < 1:
+        if command is None:
             raise ValueError("Expected 1 or more args!")
-        command = args[0].upper()
+
+        command = command.upper()
+
         if command not in commands:
             raise ValueError(f"Unknown ({command}) command! (Expected one of ({','.join(commands)})")
 
         if command == INFO:
             return Verdict.OK(Checker.INFO)
 
-        if len(args) < 2:
+        if hostname is None:
             raise ValueError("Can't find 'hostname' arg! (Expected 2 or more args)")
-        hostname = args[1]
 
         callable_check = Checker.__actions_handlers[CHECK]
         if command == CHECK and callable(callable_check):
             return callable_check(hostname)
 
-        if len(args) < 3:
+        if flag_id is None:
             raise ValueError("Can't find 'flag_id' arg! (Expected 3 or more args)")
-        flag_id = args[2]
 
-        if len(args) < 4:
+        if flag is None:
             raise ValueError("Can't find 'flag' arg (Expected 4 or more args)")
-        flag = args[3]
 
-        if len(args) < 5:
+        if vuln_id is None:
             raise ValueError("Can't find 'vuln_id' arg (Expected 5 or more args)")
-        vuln_id = args[4]
         try:
             vuln_id = int(vuln_id)
             assert vuln_id > 0
@@ -143,12 +141,12 @@ class Checker:
             raise ValueError("'vuln_id' should be representative as a natural number, "
                              "GET/PUT methods should be registered in checker!")
 
-        callable_put = Checker.__actions_handlers[PUT][vuln_id]
-        callable_get = Checker.__actions_handlers[GET][vuln_id]
-        if command == PUT and callable(callable_put):
-            return callable_put(hostname, flag_id, flag)
+        put_func = Checker.__actions_handlers[PUT][vuln_id]
+        get_func = Checker.__actions_handlers[GET][vuln_id]
+        if command == PUT:
+            return put_func(hostname, flag_id, flag)
 
-        if command == GET and callable(callable_get):
-            return callable_get(hostname, flag_id, flag)
+        if command == GET:
+            return get_func(hostname, flag_id, flag)
 
-        return Verdict.CHECKER_ERROR('', 'Something gone wrong with checker lib scenario.')
+        raise RuntimeError("Something gone wrong with checker scenario :(")
