@@ -3,13 +3,13 @@ from infrastructure.verdict_codes import *
 
 # noinspection PyPep8Naming
 class Verdict:
-    def __init__(self, code: int, public_message: str = None, private_message: str = None):
+    def __init__(self, code: int, public_message: str = '', private_message: str = ''):
         self._code: int = code
-        self._public_message: str or None = public_message
-        self._private_message: str or None = private_message
+        self._public_message: str = public_message
+        self._private_message: str = private_message
 
     @staticmethod
-    def OK(flag_id: str = None):
+    def OK(flag_id: str = ''):
         return Verdict(OK, flag_id)
 
     @staticmethod

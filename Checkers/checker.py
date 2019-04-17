@@ -1,17 +1,30 @@
-from infrastructure.actions import Register
+from infrastructure.actions import Checker
 from infrastructure.verdict import Verdict
 
 
-Register.INFO = "1:2"
+Checker.INFO = "1:2"
 
 
-@Register.check
-def check_service() -> Verdict:
+@Checker.define_check
+def check_service(host: str) -> Verdict:
+    ...  # your code
+
     return Verdict.OK()
 
 
-@Register.put
-def put_flag_into_the_service() -> Verdict:
+@Checker.define_put(1)
+def put_flag_into_the_service(host: str, flag_id: str, flag: str) -> Verdict:
+    ...  # your code
+
     return Verdict.OK()
 
 
+@Checker.define_get(1)
+def get_flag_from_the_service(host: str, flag_id: str, flag: str) -> Verdict:
+    ...  # your code
+
+    return Verdict.OK()
+
+
+if __name__ == '__main__':
+    Checker.run()
