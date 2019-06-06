@@ -3,9 +3,6 @@ from infrastructure.verdict import Verdict
 from infrastructure.checker_request import CheckRequest, PutRequest, GetRequest
 
 
-Checker.INFO = "1:2"  # means vulns distribution
-
-
 @Checker.define_check
 def check_service(request: CheckRequest) -> Verdict:
     ...  # your code
