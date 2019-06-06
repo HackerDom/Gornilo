@@ -8,7 +8,7 @@ from .action_names import INFO, CHECK, PUT, GET, TEST
 
 
 class Checker:
-    INFO: str = None
+    __info_distribution = {}
     __multiple_actions = frozenset((PUT, GET))
     __actions_handlers = {
         CHECK: None,
@@ -61,15 +61,20 @@ class Checker:
         return func
 
     @staticmethod
-    def define_put(vuln_num: int) -> callable:
+    def define_put(vuln_num: int, vuln_rate: int) -> callable:
         if not isinstance(vuln_num, int) or vuln_num < 1:
             raise TypeError(f'You should provide vulnerability natural number as a decorator argument!')
 
         def wrapper(func: callable):
             Checker.__check_function(func, PutRequest)
             Checker.__register_action(PUT, func, vuln_num)
+            Checker.__info_distribution[vuln_num] = vuln_rate
             return func
         return wrapper
+
+    @staticmethod
+    def __extract_info_call():
+        return "vulns: " + ':'.join(map(str, (Checker.__info_distribution[key] for key in sorted(Checker.__info_distribution))))
 
     @staticmethod
     def define_get(vuln_num: int) -> callable:
@@ -115,7 +120,7 @@ class Checker:
             raise ValueError(f"Unknown ({command}) command! (Expected one of ({','.join(commands)})")
 
         if command == INFO:
-            return Verdict.OK(Checker.INFO)
+            return Verdict.OK(Checker.__extract_info_call())
 
         if hostname is None:
             raise ValueError("Can't find 'hostname' arg! (Expected 2 or more args)")

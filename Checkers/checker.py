@@ -13,7 +13,7 @@ def check_service(request: CheckRequest) -> Verdict:
     return Verdict.OK()
 
 
-@Checker.define_put(vuln_num=1)
+@Checker.define_put(vuln_num=1, vuln_rate=2)
 def put_flag_into_the_service(request: PutRequest) -> Verdict:
     ...  # your code
 
@@ -27,7 +27,7 @@ def get_flag_from_the_service(request: GetRequest) -> Verdict:
     return Verdict.OK()
 
 
-@Checker.define_put(vuln_num=2)
+@Checker.define_put(vuln_num=2, vuln_rate=1)
 def put_flag_into_the_service(request: PutRequest) -> Verdict:
     ...  # your code
 
