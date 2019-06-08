@@ -3,7 +3,7 @@ import inspect
 import asyncio
 import datetime
 from traceback import format_exc
-from .checker_request import CheckRequest, PutRequest, GetRequest
+from .checksystem_request import CheckRequest, PutRequest, GetRequest
 from .verdict import Verdict
 from .action_names import INFO, CHECK, PUT, GET, TEST
 

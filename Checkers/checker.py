@@ -1,6 +1,6 @@
-from infrastructure.actions import Checker
-from infrastructure.verdict import Verdict
-from infrastructure.checker_request import CheckRequest, PutRequest, GetRequest
+from checkers.actions import Checker
+from checkers.verdict import Verdict
+from checkers.checksystem_request import CheckRequest, PutRequest, GetRequest
 
 
 checker = Checker()
@@ -9,6 +9,7 @@ checker = Checker()
 @checker.define_check
 async def check_service(request: CheckRequest) -> Verdict:
     ...  # your code
+
     return Verdict.OK()
 
 
