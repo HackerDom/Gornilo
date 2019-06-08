@@ -1,11 +1,10 @@
 import sys
 import inspect
 import asyncio
-import datetime
 from traceback import format_exc
-from .checksystem_request import CheckRequest, PutRequest, GetRequest
-from .verdict import Verdict
-from .action_names import INFO, CHECK, PUT, GET, TEST
+from checkers.models.checksystem_request import CheckRequest, PutRequest, GetRequest
+from checkers.models.verdict import Verdict
+from checkers.models.action_names import INFO, CHECK, PUT, GET, TEST
 
 
 class Checker:
@@ -50,6 +49,7 @@ class Checker:
 
     def __run_tests(self, team_ip):
         ...
+
         # todo run info-check-put-get actions + check runnability
 
         # todo reality test (15 mins chk-system like test) & fast methods test
@@ -132,6 +132,10 @@ class Checker:
         if command == CHECK:
             # noinspection PyCallingNonCallable
             return self.__async_wrapper(check_func(CheckRequest(**request_content)))
+
+        if command == TEST:
+            self.__run_tests(hostname)
+            return Verdict(0, "Tests has been finished")
 
         if flag_id is None:
             raise ValueError("Can't find 'flag_id' arg! (Expected 3 or more args)")

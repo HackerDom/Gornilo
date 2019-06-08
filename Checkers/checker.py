@@ -1,6 +1,5 @@
-from checkers.actions import Checker
-from checkers.verdict import Verdict
-from checkers.checksystem_request import CheckRequest, PutRequest, GetRequest
+from checkers import Checker, Verdict, \
+    CheckRequest, PutRequest, GetRequest
 
 
 checker = Checker()
