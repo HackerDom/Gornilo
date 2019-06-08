@@ -8,13 +8,14 @@ from .action_names import INFO, CHECK, PUT, GET, TEST
 
 
 class Checker:
-    __info_distribution = {}
-    __multiple_actions = frozenset((PUT, GET))
-    __actions_handlers = {
-        CHECK: None,
-        PUT: {},
-        GET: {},
-    }
+    def __init__(self):
+        self.__info_distribution = {}
+        self.__multiple_actions = frozenset((PUT, GET))
+        self.__actions_handlers = {
+            CHECK: None,
+            PUT: {},
+            GET: {},
+        }
 
     @staticmethod
     def __check_function(func: callable, func_type: type):
@@ -33,68 +34,62 @@ class Checker:
         if func_arg_type != func_type:
             raise TypeError(f"{func_name} first arg should be typed as {func_type}")
 
-    @classmethod
-    def __register_action(cls, action_name: str, action: callable, action_period: int = None):
-        if action_name in cls.__multiple_actions:
+    def __register_action(self, action_name: str, action: callable, action_period: int = None):
+        if action_name in self.__multiple_actions:
             if action_period is None:
                 raise ValueError("Period should not be None for multiple actions!")
-            cls.__actions_handlers[action_name][action_period] = action
+            self.__actions_handlers[action_name][action_period] = action
         else:
-            if action_name in cls.__actions_handlers:
-                if cls.__actions_handlers[action_name] is not None:
+            if action_name in self.__actions_handlers:
+                if self.__actions_handlers[action_name] is not None:
                     raise ValueError("Action has been already registered!")
-                cls.__actions_handlers[action_name] = action
+                self.__actions_handlers[action_name] = action
             else:
                 raise ValueError("Incorrect action name!")
 
-    @staticmethod
-    def __run_tests(team_ip):
+    def __run_tests(self, team_ip):
         ...
         # todo run info-check-put-get actions + check runnability
 
         # todo reality test (15 mins chk-system like test) & fast methods test
 
-    @staticmethod
-    def define_check(func: callable) -> callable:
-        Checker.__check_function(func, CheckRequest)
-        Checker.__register_action(CHECK, func)
+    def define_check(self, func: callable) -> callable:
+        self.__check_function(func, CheckRequest)
+        self.__register_action(CHECK, func)
         return func
 
-    @staticmethod
-    def define_put(vuln_num: int, vuln_rate: int) -> callable:
+    def define_put(self, vuln_num: int, vuln_rate: int) -> callable:
         if not isinstance(vuln_num, int) or vuln_num < 1:
             raise TypeError(f'You should provide vulnerability natural number as a decorator argument!')
 
         def wrapper(func: callable):
-            Checker.__check_function(func, PutRequest)
-            Checker.__register_action(PUT, func, vuln_num)
-            Checker.__info_distribution[vuln_num] = vuln_rate
+            self.__check_function(func, PutRequest)
+            self.__register_action(PUT, func, vuln_num)
+            self.__info_distribution[vuln_num] = vuln_rate
             return func
         return wrapper
 
-    @staticmethod
-    def __extract_info_call():
-        return "vulns: " + ':'.join(map(str, (Checker.__info_distribution[key] for key in sorted(Checker.__info_distribution))))
+    def __extract_info_call(self):
+        return "vulns: " + \
+               ':'.join(map(str, (self.__info_distribution[key] for key in sorted(self.__info_distribution))))
 
-    @staticmethod
-    def define_get(vuln_num: int) -> callable:
+    def define_get(self, vuln_num: int) -> callable:
         if not isinstance(vuln_num, int) or vuln_num < 1:
             raise TypeError(f'You should provide vulnerability natural number as a decorator argument!')
 
         def wrapper(func: callable):
-            Checker.__check_function(func, GetRequest)
-            Checker.__register_action(GET, func, vuln_num)
+            self.__check_function(func, GetRequest)
+            self.__register_action(GET, func, vuln_num)
             return func
         return wrapper
 
     # noinspection PyProtectedMember
-    @staticmethod
-    def run(*args):
+    def run(self, *args):
         result = Verdict.CHECKER_ERROR("", "Something gone wrong")
         try:
             if not args:
                 args = sys.argv[1:]
-            result = Checker.__run(*args)
+            result = self.__run(*args)
 
             if type(result) != Verdict:
                 result = Verdict.CHECKER_ERROR("", f'Checker function returned not Verdict value, we need to fix it!')
@@ -107,8 +102,7 @@ class Checker:
                 print(result._private_message, file=sys.stderr)
             sys.exit(result._code)
 
-    @staticmethod
-    def __run(command=None, hostname=None, flag_id=None, flag=None, vuln_id=None) -> Verdict:
+    def __run(self, command=None, hostname=None, flag_id=None, flag=None, vuln_id=None) -> Verdict:
         commands = [CHECK, PUT, GET, INFO, TEST]
 
         if command is None:
@@ -120,12 +114,12 @@ class Checker:
             raise ValueError(f"Unknown ({command}) command! (Expected one of ({','.join(commands)})")
 
         if command == INFO:
-            return Verdict.OK(Checker.__extract_info_call())
+            return Verdict.OK(self.__extract_info_call())
 
         if hostname is None:
             raise ValueError("Can't find 'hostname' arg! (Expected 2 or more args)")
 
-        check_func = Checker.__actions_handlers[CHECK]
+        check_func = self.__actions_handlers[CHECK]
         request_content = {
             "hostname": hostname
         }
@@ -145,18 +139,19 @@ class Checker:
         try:
             vuln_id = int(vuln_id)
             assert vuln_id > 0
-            assert vuln_id in Checker.__actions_handlers[PUT]
-            assert vuln_id in Checker.__actions_handlers[GET]
+            assert vuln_id in self.__actions_handlers[PUT]
+            assert vuln_id in self.__actions_handlers[GET]
         except (TypeError, AssertionError):
             raise ValueError("'vuln_id' should be representative as a natural number, "
                              "GET/PUT methods should be registered in checker!")
 
-        put_func = Checker.__actions_handlers[PUT][vuln_id]
-        get_func = Checker.__actions_handlers[GET][vuln_id]
+        put_func = self.__actions_handlers[PUT][vuln_id]
+        get_func = self.__actions_handlers[GET][vuln_id]
 
         request_content.update({
             "flag_id": flag_id,
-            "flag": flag
+            "flag": flag,
+            "vuln_id": vuln_id
         })
 
         if command == PUT:
