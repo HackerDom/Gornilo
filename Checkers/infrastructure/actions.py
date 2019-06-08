@@ -1,5 +1,6 @@
 import sys
 import inspect
+import asyncio
 import datetime
 from traceback import format_exc
 from .checker_request import CheckRequest, PutRequest, GetRequest
@@ -82,6 +83,11 @@ class Checker:
             return func
         return wrapper
 
+    def __async_wrapper(self, func_result):
+        if asyncio.iscoroutine(func_result):
+            return asyncio.run(func_result)
+        return func_result
+
     # noinspection PyProtectedMember
     def run(self, *args):
         result = Verdict.CHECKER_ERROR("", "Something gone wrong")
@@ -125,7 +131,7 @@ class Checker:
 
         if command == CHECK:
             # noinspection PyCallingNonCallable
-            return check_func(CheckRequest(**request_content))
+            return self.__async_wrapper(check_func(CheckRequest(**request_content)))
 
         if flag_id is None:
             raise ValueError("Can't find 'flag_id' arg! (Expected 3 or more args)")
@@ -154,9 +160,9 @@ class Checker:
         })
 
         if command == PUT:
-            return put_func(PutRequest(**request_content))
+            return self.__async_wrapper(put_func(PutRequest(**request_content)))
 
         if command == GET:
-            return get_func(GetRequest(**request_content))
+            return self.__async_wrapper(get_func(GetRequest(**request_content)))
 
         raise RuntimeError("Something gone wrong with checker scenario :(")
