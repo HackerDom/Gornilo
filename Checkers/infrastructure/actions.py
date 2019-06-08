@@ -70,8 +70,7 @@ class Checker:
         return wrapper
 
     def __extract_info_call(self):
-        return "vulns: " + \
-               ':'.join(map(str, (self.__info_distribution[key] for key in sorted(self.__info_distribution))))
+        return "vulns: " + ':'.join(str(self.__info_distribution[key]) for key in sorted(self.__info_distribution))
 
     def define_get(self, vuln_num: int) -> callable:
         if not isinstance(vuln_num, int) or vuln_num < 1:
