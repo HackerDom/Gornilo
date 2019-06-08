@@ -1,4 +1,4 @@
-from Configuration.sources.loader import Loader
+from sources.loader import Loader
 from threading import Thread
 from time import sleep
 

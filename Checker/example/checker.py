@@ -1,4 +1,4 @@
-from checkers import Checker, Verdict, \
+from Checker.src import Checker, Verdict, \
     CheckRequest, PutRequest, GetRequest
 
 

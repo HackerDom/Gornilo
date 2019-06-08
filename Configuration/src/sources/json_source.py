@@ -1,4 +1,4 @@
-from Configuration.sources.base_source import Source
+from sources.base_source import Source
 from json import load
 
 

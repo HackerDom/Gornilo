@@ -1,6 +1,7 @@
-from Configuration.sources.loaders_pool import LoadersPool, Loader
-from Configuration.sources.base_source import Source
-from Configuration.sources.json_source import JsonSource
+from sources.loaders_pool import LoadersPool, Loader
+from sources.base_source import Source
+from sources.json_source import JsonSource
+from sources.external_json_source import ExternalJsonSource
 
 from typing import Type
 
@@ -30,5 +31,5 @@ def json_source(path: str):
     return __configuration(JsonSource, path)
 
 
-def github_source(path: str):
-    pass
+def external_json_source(path: str):
+    return __configuration(ExternalJsonSource, path)

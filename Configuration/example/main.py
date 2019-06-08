@@ -1,5 +1,5 @@
 from time import sleep
-from Monitor.config import MonitorConfiguration
+from Configuration.example.config import MonitorConfiguration
 
 
 saved_instance = MonitorConfiguration()

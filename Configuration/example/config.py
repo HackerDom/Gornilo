@@ -1,4 +1,4 @@
-from Configuration.configuration import json_source
+from configuration import json_source
 
 
 @json_source("config.json")

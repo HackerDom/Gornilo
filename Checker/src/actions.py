@@ -2,9 +2,9 @@ import sys
 import inspect
 import asyncio
 from traceback import format_exc
-from checkers.models.checksystem_request import CheckRequest, PutRequest, GetRequest
-from checkers.models.verdict import Verdict
-from checkers.models.action_names import INFO, CHECK, PUT, GET, TEST
+from .models.checksystem_request import CheckRequest, PutRequest, GetRequest
+from .models.verdict import Verdict
+from .models.action_names import INFO, CHECK, PUT, GET, TEST
 
 
 class Checker:

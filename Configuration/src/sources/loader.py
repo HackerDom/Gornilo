@@ -2,7 +2,7 @@ from datetime import datetime
 from logging import getLogger
 from typing import Type
 
-from Configuration.sources.base_source import Source
+from sources.base_source import Source
 
 
 logger = getLogger(__name__)
