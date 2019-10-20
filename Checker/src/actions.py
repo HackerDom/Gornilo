@@ -1,6 +1,9 @@
 import sys
 import inspect
 import asyncio
+import logging
+from logging.handlers import MemoryHandler
+from typing import Dict, Callable
 from traceback import format_exc
 from .models.checksystem_request import CheckRequest, PutRequest, GetRequest
 from .models.verdict import Verdict
@@ -11,7 +14,7 @@ class Checker:
     def __init__(self):
         self.__info_distribution = {}
         self.__multiple_actions = frozenset((PUT, GET))
-        self.__actions_handlers = {
+        self.__actions_handlers: Dict[str, Callable[[CheckRequest], Verdict]] = {
             CHECK: None,
             PUT: {},
             GET: {},
@@ -48,11 +51,22 @@ class Checker:
                 raise ValueError("Incorrect action name!")
 
     def __run_tests(self, team_ip):
-        ...
+        from io import StringIO
+        from contextlib import redirect_stderr, redirect_stdout
+        from utils import measure
 
-        # todo run info-check-put-get actions + check runnability
+        testing_logger = logging.Logger("chklib")
+        testing_logger.addHandler(MemoryHandler(100000))
+        testing_logger.info("Starting checker tests...")
 
-        # todo reality test (15 mins chk-system like test) & fast methods test
+        for i in range(3):
+            stdout, stderr = StringIO(), StringIO()
+            testing_logger.info("Running check...")
+            with redirect_stdout(stdout), redirect_stderr(stderr), measure(testing_logger):
+                request = CheckRequest(hostname=team_ip)
+            check_verdict = self.__actions_handlers[CHECK](request)
+            testing_logger.info(f"Verdict: {check_verdict}, sterr: {stderr.read()}, stdout: {stdout.read()}")
+        # todo put/get
 
     def define_check(self, func: callable) -> callable:
         self.__check_function(func, CheckRequest)
