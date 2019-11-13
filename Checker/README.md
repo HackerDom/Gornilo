@@ -8,4 +8,3 @@ Features:
 - object model, fully documented
 - built-in error handling
 - asyncio support
-- 
