@@ -52,22 +52,37 @@ class Checker:
                 raise ValueError("Incorrect action name!")
 
     def __run_tests(self, team_ip):
-        from io import StringIO
-        from contextlib import redirect_stderr, redirect_stdout
-        from utils import measure
+        from gornilo.utils import measure, generate_flag
+        from uuid import uuid4
+        import subprocess
 
-        testing_logger = logging.Logger("chklib")
-        testing_logger.addHandler(MemoryHandler(100000))
-        testing_logger.info("Starting checker tests...")
+        with measure("CHECK"):
+            check_result = subprocess.run([sys.executable, sys.argv[0], "CHECK", team_ip], text=True, capture_output=True)
+        print(f"Check completed with {check_result.returncode} exitcode, "
+              f"stdout: {check_result.stdout}, "
+              f"stderr: {check_result.stderr}")
 
-        for i in range(3):
-            stdout, stderr = StringIO(), StringIO()
-            testing_logger.info("Running check...")
-            with redirect_stdout(stdout), redirect_stderr(stderr), measure(testing_logger):
-                request = CheckRequest(hostname=team_ip)
-            check_verdict = self.__actions_handlers[CHECK](request)
-            testing_logger.info(f"Verdict: {check_verdict}, sterr: {stderr.read()}, stdout: {stdout.read()}")
-        # todo put/get
+        flag = generate_flag()
+        flag_id = str(uuid4())
+        vulns_amount = len(subprocess.run([sys.executable, sys.argv[0], "INFO"],
+                                          text=True, capture_output=True).stdout.split(":")) - 1
+
+        for i in range(vulns_amount):
+            with measure(f"PUT vuln {i + 1}"):
+                put_result = subprocess.run([sys.executable, sys.argv[0], "PUT", team_ip, flag_id, flag, str(i + 1)],
+                                            text=True, capture_output=True)
+            print(f"Put exited with {put_result.returncode}, "
+                  f"stdout: {put_result.stdout}, "
+                  f"stderr: {put_result.stderr}")
+
+            if put_result.stdout:
+                flag_id = put_result.stdout
+            with measure(f"GET vuln {i + 1}"):
+                get_result = subprocess.run([sys.executable, sys.argv[0], "GET", team_ip, flag_id, flag, str(i + 1)],
+                                            text=True, capture_output=True)
+            print(f"GET exited with {get_result.returncode}, "
+                  f"stdout: {get_result.stdout}, "
+                  f"stderr: {get_result.stderr}")
 
     def define_check(self, func: callable) -> callable:
         self.__check_function(func, CheckRequest)

@@ -1,5 +1,4 @@
-from gornilo import Checker, Verdict, \
-    CheckRequest, PutRequest, GetRequest
+from gornilo import CheckRequest, Verdict, Checker, PutRequest, GetRequest
 
 
 checker = Checker()
@@ -22,7 +21,7 @@ async def put_flag_into_the_service(request: PutRequest) -> Verdict:
 @checker.define_get(vuln_num=1)
 async def get_flag_from_the_service(request: GetRequest) -> Verdict:
     ...  # your code
-
+    print(f"new flag_id = {request.flag_id}")
     return Verdict.OK()
 
 
