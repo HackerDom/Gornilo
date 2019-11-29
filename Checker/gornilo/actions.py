@@ -5,6 +5,7 @@ import logging
 from logging.handlers import MemoryHandler
 from typing import Dict, Callable
 from traceback import format_exc
+from contextlib import redirect_stdout
 from gornilo.models.checksystem_request import CheckRequest, PutRequest, GetRequest
 from gornilo.models.verdict import Verdict
 from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
@@ -104,21 +105,22 @@ class Checker:
 
     # noinspection PyProtectedMember
     def run(self, *args):
-        result = Verdict.CHECKER_ERROR("", "Something gone wrong")
+        result = Verdict.CHECKER_ERROR("Something gone wrong")
         try:
             if not args:
                 args = sys.argv[1:]
-            result = self.__run(*args)
+            with redirect_stdout(sys.stderr):
+                result = self.__run(*args)
 
             if type(result) != Verdict:
-                result = Verdict.CHECKER_ERROR("", f'Checker function returned not Verdict value, we need to fix it!')
+                print(f"Checker function returned not Verdict value, we need to fix it!", file=sys.stderr)
+                result = Verdict.CHECKER_ERROR("")
         except Exception as e:
-            result = Verdict.CHECKER_ERROR('', f"Checker caught an error: {e},\n {format_exc()}")
+            print(f"Checker caught an error: {e},\n {format_exc()}", file=sys.stderr)
+            result = Verdict.CHECKER_ERROR("")
         finally:
             if result._public_message:
                 print(result._public_message, file=sys.stdout)
-            if result._private_message:
-                print(result._private_message, file=sys.stderr)
             sys.exit(result._code)
 
     def __run(self, command=None, hostname=None, flag_id=None, flag=None, vuln_id=None) -> Verdict:

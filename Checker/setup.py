@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gornilo", # Replace with your own username
-    version="0.0.4",
+    version="0.4.0",
     author="rx00",
     author_email="rx00@hackerdom.com",
     description="AD CTFs checker wrapper",
