@@ -1,17 +1,21 @@
 import sys
 import inspect
 import asyncio
+import logging
+from logging.handlers import MemoryHandler
+from typing import Dict, Callable
 from traceback import format_exc
-from .models.checksystem_request import CheckRequest, PutRequest, GetRequest
-from .models.verdict import Verdict
-from .models.action_names import INFO, CHECK, PUT, GET, TEST
+from contextlib import redirect_stdout
+from gornilo.models.checksystem_request import CheckRequest, PutRequest, GetRequest
+from gornilo.models.verdict import Verdict
+from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 
 
 class Checker:
     def __init__(self):
         self.__info_distribution = {}
         self.__multiple_actions = frozenset((PUT, GET))
-        self.__actions_handlers = {
+        self.__actions_handlers: Dict[str, Callable[[CheckRequest], Verdict]] = {
             CHECK: None,
             PUT: {},
             GET: {},
@@ -48,11 +52,37 @@ class Checker:
                 raise ValueError("Incorrect action name!")
 
     def __run_tests(self, team_ip):
-        ...
+        from gornilo.utils import measure, generate_flag
+        from uuid import uuid4
+        import subprocess
 
-        # todo run info-check-put-get actions + check runnability
+        with measure("CHECK"):
+            check_result = subprocess.run([sys.executable, sys.argv[0], "CHECK", team_ip], text=True, capture_output=True)
+        print(f"Check completed with {check_result.returncode} exitcode, "
+              f"stdout: {check_result.stdout}, "
+              f"stderr: {check_result.stderr}")
 
-        # todo reality test (15 mins chk-system like test) & fast methods test
+        flag = generate_flag()
+        flag_id = str(uuid4())
+        vulns_amount = len(subprocess.run([sys.executable, sys.argv[0], "INFO"],
+                                          text=True, capture_output=True).stdout.split(":")) - 1
+
+        for i in range(vulns_amount):
+            with measure(f"PUT vuln {i + 1}"):
+                put_result = subprocess.run([sys.executable, sys.argv[0], "PUT", team_ip, flag_id, flag, str(i + 1)],
+                                            text=True, capture_output=True)
+            print(f"Put exited with {put_result.returncode}, "
+                  f"stdout: {put_result.stdout}, "
+                  f"stderr: {put_result.stderr}")
+
+            if put_result.stdout:
+                flag_id = put_result.stdout
+            with measure(f"GET vuln {i + 1}"):
+                get_result = subprocess.run([sys.executable, sys.argv[0], "GET", team_ip, flag_id, flag, str(i + 1)],
+                                            text=True, capture_output=True)
+            print(f"GET exited with {get_result.returncode}, "
+                  f"stdout: {get_result.stdout}, "
+                  f"stderr: {get_result.stderr}")
 
     def define_check(self, func: callable) -> callable:
         self.__check_function(func, CheckRequest)
@@ -90,21 +120,22 @@ class Checker:
 
     # noinspection PyProtectedMember
     def run(self, *args):
-        result = Verdict.CHECKER_ERROR("", "Something gone wrong")
+        result = Verdict.CHECKER_ERROR("Something gone wrong")
         try:
             if not args:
                 args = sys.argv[1:]
-            result = self.__run(*args)
+            with redirect_stdout(sys.stderr):
+                result = self.__run(*args)
 
             if type(result) != Verdict:
-                result = Verdict.CHECKER_ERROR("", f'Checker function returned not Verdict value, we need to fix it!')
+                print(f"Checker function returned not Verdict value, we need to fix it!", file=sys.stderr)
+                result = Verdict.CHECKER_ERROR("")
         except Exception as e:
-            result = Verdict.CHECKER_ERROR('', f"Checker caught an error: {e},\n {format_exc()}")
+            print(f"Checker caught an error: {e},\n {format_exc()}", file=sys.stderr)
+            result = Verdict.CHECKER_ERROR("")
         finally:
             if result._public_message:
                 print(result._public_message, file=sys.stdout)
-            if result._private_message:
-                print(result._private_message, file=sys.stderr)
             sys.exit(result._code)
 
     def __run(self, command=None, hostname=None, flag_id=None, flag=None, vuln_id=None) -> Verdict:

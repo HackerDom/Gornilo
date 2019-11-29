@@ -1,5 +1,4 @@
-from Checker.src import Checker, Verdict, \
-    CheckRequest, PutRequest, GetRequest
+from gornilo import CheckRequest, Verdict, Checker, PutRequest, GetRequest
 
 
 checker = Checker()
@@ -22,22 +21,22 @@ async def put_flag_into_the_service(request: PutRequest) -> Verdict:
 @checker.define_get(vuln_num=1)
 async def get_flag_from_the_service(request: GetRequest) -> Verdict:
     ...  # your code
-
+    print(f"new flag_id = {request.flag_id}")
     return Verdict.OK()
 
 
 @checker.define_put(vuln_num=2, vuln_rate=1)
 async def put_flag_into_the_service(request: PutRequest) -> Verdict:
     ...  # your code
-
-    return Verdict.MUMBLE("something bad with ur proto", "they are cheating!")
+    print("They are cheating") # <-- redirected to the stderr
+    return Verdict.MUMBLE("something bad with ur proto")
 
 
 @checker.define_get(vuln_num=2)
 async def get_flag_from_the_service(request: GetRequest) -> Verdict:
     ...  # your code
 
-    return Verdict.CORRUPT("flag lost", "lol, they lost it")
+    return Verdict.CORRUPT("flag lost")
 
 
 if __name__ == '__main__':
