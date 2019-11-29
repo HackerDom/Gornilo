@@ -1,11 +1,13 @@
 import setuptools
 
+from pkgutil import walk_packages
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="gornilo", # Replace with your own username
-    version="0.0.2",
+    version="0.0.4",
     author="rx00",
     author_email="rx00@hackerdom.com",
     description="AD CTFs checker wrapper",

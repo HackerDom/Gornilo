@@ -1,4 +1,4 @@
-from .verdict_codes import *
+from gornilo.models.verdict.verdict_codes import *
 
 
 # noinspection PyPep8Naming

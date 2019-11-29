@@ -5,9 +5,9 @@ import logging
 from logging.handlers import MemoryHandler
 from typing import Dict, Callable
 from traceback import format_exc
-from models.checksystem_request import CheckRequest, PutRequest, GetRequest
-from models.verdict import Verdict
-from models.action_names import INFO, CHECK, PUT, GET, TEST
+from gornilo.models.checksystem_request import CheckRequest, PutRequest, GetRequest
+from gornilo.models.verdict import Verdict
+from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 
 
 class Checker:
