@@ -1,4 +1,5 @@
 from gornilo.models.verdict.verdict_codes import *
+import json
 
 
 # noinspection PyPep8Naming
@@ -6,6 +7,10 @@ class Verdict:
     def __init__(self, code: int, public_message: str = ''):
         self._code: int = code
         self._public_message: str = public_message
+
+    @staticmethod
+    def OK_WITH_FLAG_ID(public_flag_id: str, private_content: str):
+        return Verdict(OK, json.dumps({"public_flag_id": public_flag_id, "private_content": private_content}))
 
     @staticmethod
     def OK(flag_id: str = ''):

@@ -11,15 +11,10 @@ from gornilo.models.verdict import Verdict
 
 
 class Checker:
-    def __init__(self, flag_id_description=None):
-
-        if flag_id_description is not None and type(flag_id_description) is not str:
-            raise TypeError("flag_id_description should be type of str!")
-        self.__flag_id_description = flag_id_description
-
+    def __init__(self):
         self.__info_distribution = {}
         self.__multiple_actions = frozenset((PUT, GET))
-        self.__actions_handlers: Dict[str, Callable[[CheckRequest], Verdict]] = {
+        self.__actions_handlers: Dict[str, Dict[int, Callable[[CheckRequest], Verdict]]] = {
             CHECK: None,
             PUT: {},
             GET: {},
@@ -66,12 +61,14 @@ class Checker:
               f"stdout: {check_result.stdout}, "
               f"stderr: {check_result.stderr}")
 
-        flag = generate_flag()
         vulns_amount = len(subprocess.run([sys.executable, sys.argv[0], INFO],
                                           text=True, capture_output=True).stdout.split(":")) - 1
 
         for i in range(vulns_amount):
+
+            flag = generate_flag()
             flag_id = str(uuid4())
+
             with measure(f"{PUT} vuln {i + 1}"):
                 put_result = subprocess.run([sys.executable, sys.argv[0], PUT, team_ip, flag_id, flag, str(i + 1)],
                                             text=True, capture_output=True)
@@ -105,16 +102,7 @@ class Checker:
         return wrapper
 
     def __extract_info_call(self):
-        prebuilt_vulns_distribution = "vulns: " + ':'.join(str(self.__info_distribution[key]) for key in sorted(self.__info_distribution))
-        if self.__new_checksystem_api():
-            return f"{prebuilt_vulns_distribution}\npublic_flag_description: {self.__flag_id_description}\n"
-        return prebuilt_vulns_distribution
-
-    def __new_checksystem_api(self):
-        """
-        :return: New checksystem api will be used only if `self.flag_id_description` is not None!
-        """
-        return bool(self.__flag_id_description)
+        return "vulns: " + ':'.join(str(self.__info_distribution[key]) for key in sorted(self.__info_distribution))
 
     def define_get(self, vuln_num: int) -> callable:
         if not isinstance(vuln_num, int) or vuln_num < 1:

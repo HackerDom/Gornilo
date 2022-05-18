@@ -1,7 +1,6 @@
-from gornilo import CheckRequest, Verdict, Checker, PutRequest, GetRequest
+from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, NewChecker, VulnChecker
 
-
-checker = Checker()
+checker = NewChecker()
 
 
 @checker.define_check
@@ -11,32 +10,26 @@ async def check_service(request: CheckRequest) -> Verdict:
     return Verdict.OK()
 
 
-@checker.define_put(vuln_num=1, vuln_rate=2)
-async def put_flag_into_the_service(request: PutRequest) -> Verdict:
-    ...  # your code
+@checker.define_vuln("flag_id is an email")
+class XSSChecker(VulnChecker):
+    @staticmethod
+    def put(request: PutRequest) -> Verdict:
+        return Verdict.OK_WITH_FLAG_ID("email", "next_id")
 
-    return Verdict.OK("my_new_flag_id")
-
-
-@checker.define_get(vuln_num=1)
-async def get_flag_from_the_service(request: GetRequest) -> Verdict:
-    ...  # your code
-    print(f"new flag_id = {request.flag_id}")
-    return Verdict.OK()
+    @staticmethod
+    def get(request: GetRequest) -> Verdict:
+        return Verdict.OK()
 
 
-@checker.define_put(vuln_num=2, vuln_rate=1)
-async def put_flag_into_the_service(request: PutRequest) -> Verdict:
-    ...  # your code
-    print("They are cheating") # <-- redirected to the stderr
-    return Verdict.MUMBLE("something bad with ur proto")
+@checker.define_vuln("flag_id is something else in xml")
+class XMKChecker(VulnChecker):
+    @staticmethod
+    def put(request: PutRequest) -> Verdict:
+        return Verdict.OK_WITH_FLAG_ID("email", "next_id")
 
-
-@checker.define_get(vuln_num=2)
-async def get_flag_from_the_service(request: GetRequest) -> Verdict:
-    ...  # your code
-
-    return Verdict.CORRUPT("flag lost")
+    @staticmethod
+    def get(request: GetRequest) -> Verdict:
+        return Verdict.OK()
 
 
 if __name__ == '__main__':
