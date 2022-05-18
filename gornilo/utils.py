@@ -13,8 +13,8 @@ def generate_flag():
 def measure(action_name: str) -> None:
     start = datetime.now()
     prefix = f"[{action_name}] " if action_name else None
-    print(prefix + f"Measure started at {start}.")
+    print(prefix + f"Measure has been started at {start}.")
     try:
         yield None
     finally:
-        print(prefix + f"Action completed in {(datetime.now() - start).seconds} sec!")
+        print(prefix + f"Action has been completed in {(datetime.now() - start).seconds} seconds!")

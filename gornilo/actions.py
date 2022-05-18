@@ -1,14 +1,13 @@
-import sys
-import inspect
 import asyncio
-import logging
-from logging.handlers import MemoryHandler
-from typing import Dict, Callable
-from traceback import format_exc
+import inspect
+import sys
 from contextlib import redirect_stdout
+from traceback import format_exc
+from typing import Dict, Callable
+
+from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 from gornilo.models.checksystem_request import CheckRequest, PutRequest, GetRequest
 from gornilo.models.verdict import Verdict
-from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 
 
 class Checker:
@@ -63,11 +62,11 @@ class Checker:
               f"stderr: {check_result.stderr}")
 
         flag = generate_flag()
-        flag_id = str(uuid4())
         vulns_amount = len(subprocess.run([sys.executable, sys.argv[0], "INFO"],
                                           text=True, capture_output=True).stdout.split(":")) - 1
 
         for i in range(vulns_amount):
+            flag_id = str(uuid4())
             with measure(f"PUT vuln {i + 1}"):
                 put_result = subprocess.run([sys.executable, sys.argv[0], "PUT", team_ip, flag_id, flag, str(i + 1)],
                                             text=True, capture_output=True)
