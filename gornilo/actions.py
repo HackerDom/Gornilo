@@ -11,7 +11,12 @@ from gornilo.models.verdict import Verdict
 
 
 class Checker:
-    def __init__(self):
+    def __init__(self, flag_id_description=None):
+
+        if flag_id_description is not None and type(flag_id_description) is not str:
+            raise TypeError("flag_id_description should be type of str!")
+        self.__flag_id_description = flag_id_description
+
         self.__info_distribution = {}
         self.__multiple_actions = frozenset((PUT, GET))
         self.__actions_handlers: Dict[str, Callable[[CheckRequest], Verdict]] = {
@@ -50,36 +55,36 @@ class Checker:
             else:
                 raise ValueError("Incorrect action name!")
 
-    def __run_tests(self, team_ip):
+    def __run_tests(self, team_ip) -> int:
         from gornilo.utils import measure, generate_flag
         from uuid import uuid4
         import subprocess
 
-        with measure("CHECK"):
-            check_result = subprocess.run([sys.executable, sys.argv[0], "CHECK", team_ip], text=True, capture_output=True)
+        with measure(CHECK):
+            check_result = subprocess.run([sys.executable, sys.argv[0], CHECK, team_ip], text=True, capture_output=True)
         print(f"Check completed with {check_result.returncode} exitcode, "
               f"stdout: {check_result.stdout}, "
               f"stderr: {check_result.stderr}")
 
         flag = generate_flag()
-        vulns_amount = len(subprocess.run([sys.executable, sys.argv[0], "INFO"],
+        vulns_amount = len(subprocess.run([sys.executable, sys.argv[0], INFO],
                                           text=True, capture_output=True).stdout.split(":")) - 1
 
         for i in range(vulns_amount):
             flag_id = str(uuid4())
-            with measure(f"PUT vuln {i + 1}"):
-                put_result = subprocess.run([sys.executable, sys.argv[0], "PUT", team_ip, flag_id, flag, str(i + 1)],
+            with measure(f"{PUT} vuln {i + 1}"):
+                put_result = subprocess.run([sys.executable, sys.argv[0], PUT, team_ip, flag_id, flag, str(i + 1)],
                                             text=True, capture_output=True)
-            print(f"Put exited with {put_result.returncode}, "
+            print(f"{PUT} exited with {put_result.returncode}, "
                   f"stdout: {put_result.stdout}, "
                   f"stderr: {put_result.stderr}")
 
             if put_result.stdout:
                 flag_id = put_result.stdout
-            with measure(f"GET vuln {i + 1}"):
-                get_result = subprocess.run([sys.executable, sys.argv[0], "GET", team_ip, flag_id, flag, str(i + 1)],
+            with measure(f"{GET} vuln {i + 1}"):
+                get_result = subprocess.run([sys.executable, sys.argv[0], GET, team_ip, flag_id, flag, str(i + 1)],
                                             text=True, capture_output=True)
-            print(f"GET exited with {get_result.returncode}, "
+            print(f"{GET} exited with {get_result.returncode}, "
                   f"stdout: {get_result.stdout}, "
                   f"stderr: {get_result.stderr}")
 
@@ -100,7 +105,16 @@ class Checker:
         return wrapper
 
     def __extract_info_call(self):
-        return "vulns: " + ':'.join(str(self.__info_distribution[key]) for key in sorted(self.__info_distribution))
+        prebuilt_vulns_distribution = "vulns: " + ':'.join(str(self.__info_distribution[key]) for key in sorted(self.__info_distribution))
+        if self.__new_checksystem_api():
+            return f"{prebuilt_vulns_distribution}\npublic_flag_description: {self.__flag_id_description}\n"
+        return prebuilt_vulns_distribution
+
+    def __new_checksystem_api(self):
+        """
+        :return: New checksystem api will be used only if `self.flag_id_description` is not None!
+        """
+        return bool(self.__flag_id_description)
 
     def define_get(self, vuln_num: int) -> callable:
         if not isinstance(vuln_num, int) or vuln_num < 1:
@@ -182,7 +196,7 @@ class Checker:
             assert vuln_id in self.__actions_handlers[GET]
         except (TypeError, AssertionError):
             raise ValueError("'vuln_id' should be representative as a natural number, "
-                             "GET/PUT methods should be registered in checker!")
+                             f"{GET}/{PUT} methods should be registered in checker!")
 
         put_func = self.__actions_handlers[PUT][vuln_id]
         get_func = self.__actions_handlers[GET][vuln_id]

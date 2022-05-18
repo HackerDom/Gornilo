@@ -1,6 +1,6 @@
 from random import randint
 from string import ascii_uppercase, digits
-from datetime import datetime
+from time import time
 from contextlib import contextmanager
 
 
@@ -11,10 +11,10 @@ def generate_flag():
 
 @contextmanager
 def measure(action_name: str) -> None:
-    start = datetime.now()
+    start = time()
     prefix = f"[{action_name}] " if action_name else None
     print(prefix + f"Measure has been started at {start}.")
     try:
         yield None
     finally:
-        print(prefix + f"Action has been completed in {(datetime.now() - start).seconds} seconds!")
+        print(prefix + f"Action has been completed in {(time() - start):.2f} seconds!")
