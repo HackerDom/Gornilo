@@ -1,21 +1,20 @@
-import sys
-import inspect
 import asyncio
-import logging
-from logging.handlers import MemoryHandler
-from typing import Dict, Callable
-from traceback import format_exc
+import inspect
+import sys
 from contextlib import redirect_stdout
+from traceback import format_exc
+from typing import Dict, Callable
+
+from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 from gornilo.models.checksystem_request import CheckRequest, PutRequest, GetRequest
 from gornilo.models.verdict import Verdict
-from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 
 
 class Checker:
     def __init__(self):
         self.__info_distribution = {}
         self.__multiple_actions = frozenset((PUT, GET))
-        self.__actions_handlers: Dict[str, Callable[[CheckRequest], Verdict]] = {
+        self.__actions_handlers: Dict[str, Dict[int, Callable[[CheckRequest], Verdict]]] = {
             CHECK: None,
             PUT: {},
             GET: {},
@@ -51,36 +50,38 @@ class Checker:
             else:
                 raise ValueError("Incorrect action name!")
 
-    def __run_tests(self, team_ip):
+    def __run_tests(self, team_ip) -> int:
         from gornilo.utils import measure, generate_flag
         from uuid import uuid4
         import subprocess
 
-        with measure("CHECK"):
-            check_result = subprocess.run([sys.executable, sys.argv[0], "CHECK", team_ip], text=True, capture_output=True)
+        with measure(CHECK):
+            check_result = subprocess.run([sys.executable, sys.argv[0], CHECK, team_ip], text=True, capture_output=True)
         print(f"Check completed with {check_result.returncode} exitcode, "
               f"stdout: {check_result.stdout}, "
               f"stderr: {check_result.stderr}")
 
-        flag = generate_flag()
-        flag_id = str(uuid4())
-        vulns_amount = len(subprocess.run([sys.executable, sys.argv[0], "INFO"],
+        vulns_amount = len(subprocess.run([sys.executable, sys.argv[0], INFO],
                                           text=True, capture_output=True).stdout.split(":")) - 1
 
         for i in range(vulns_amount):
-            with measure(f"PUT vuln {i + 1}"):
-                put_result = subprocess.run([sys.executable, sys.argv[0], "PUT", team_ip, flag_id, flag, str(i + 1)],
+
+            flag = generate_flag()
+            flag_id = str(uuid4())
+
+            with measure(f"{PUT} vuln {i + 1}"):
+                put_result = subprocess.run([sys.executable, sys.argv[0], PUT, team_ip, flag_id, flag, str(i + 1)],
                                             text=True, capture_output=True)
-            print(f"Put exited with {put_result.returncode}, "
+            print(f"{PUT} exited with {put_result.returncode}, "
                   f"stdout: {put_result.stdout}, "
                   f"stderr: {put_result.stderr}")
 
             if put_result.stdout:
                 flag_id = put_result.stdout
-            with measure(f"GET vuln {i + 1}"):
-                get_result = subprocess.run([sys.executable, sys.argv[0], "GET", team_ip, flag_id, flag, str(i + 1)],
+            with measure(f"{GET} vuln {i + 1}"):
+                get_result = subprocess.run([sys.executable, sys.argv[0], GET, team_ip, flag_id, flag, str(i + 1)],
                                             text=True, capture_output=True)
-            print(f"GET exited with {get_result.returncode}, "
+            print(f"{GET} exited with {get_result.returncode}, "
                   f"stdout: {get_result.stdout}, "
                   f"stderr: {get_result.stderr}")
 
@@ -183,7 +184,7 @@ class Checker:
             assert vuln_id in self.__actions_handlers[GET]
         except (TypeError, AssertionError):
             raise ValueError("'vuln_id' should be representative as a natural number, "
-                             "GET/PUT methods should be registered in checker!")
+                             f"{GET}/{PUT} methods should be registered in checker!")
 
         put_func = self.__actions_handlers[PUT][vuln_id]
         get_func = self.__actions_handlers[GET][vuln_id]
