@@ -22,4 +22,10 @@ class PutRequest(CheckRequest, __PutGetBase):
 
 @dataclass(frozen=True)
 class GetRequest(CheckRequest, __PutGetBase):
+    public_flag_id: str = ""
     action: str = GET
+
+
+@dataclass(frozen=True)
+class __PublicFlagIdBase:
+    public_flag_id: str

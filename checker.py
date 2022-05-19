@@ -22,7 +22,7 @@ class XSSChecker(VulnChecker):
 
 
 @checker.define_vuln("flag_id is something else in xml")
-class XMKChecker(VulnChecker):
+class XMLChecker(VulnChecker):
     @staticmethod
     def put(request: PutRequest) -> Verdict:
         return Verdict.OK_WITH_FLAG_ID("email", "next_id")
