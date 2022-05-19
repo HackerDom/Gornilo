@@ -14,8 +14,6 @@ from gornilo.models.verdict import Verdict
 
 
 class Checker:
-    __public_flag_id_param: str = "public_flag_id"
-
     def __init__(self):
         self.__info_distribution = {}
         self.__multiple_actions = frozenset((PUT, GET))
@@ -135,6 +133,10 @@ class Checker:
             private_flag_id = json_flag_id.pop(PRIVATE_CONTENT)
 
             request_content[PUBLIC_FLAG_ID] = public_flag_id
+
+            if not isinstance(private_flag_id, str):
+                private_flag_id = json.dumps(private_flag_id)
+
             request_content["flag_id"] = private_flag_id
 
             return request_content
