@@ -1,4 +1,5 @@
 from gornilo import CheckRequest, Verdict, PutRequest, GetRequest, NewChecker, VulnChecker
+from gornilo.http_clients import requests_with_retries
 
 checker = NewChecker()
 
@@ -6,6 +7,8 @@ checker = NewChecker()
 @checker.define_check
 async def check_service(request: CheckRequest) -> Verdict:
     ...  # your code
+    data = requests_with_retries().get("http://ya.ru")
+    print(data.request.headers, data.text)
 
     return Verdict.OK()
 
