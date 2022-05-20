@@ -1,10 +1,13 @@
 import asyncio
 import inspect
 import sys
+import json
 from contextlib import redirect_stdout
 from traceback import format_exc
 from typing import Dict, Callable
+from copy import copy
 
+from gornilo.models.verdict.api_constants import *
 from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 from gornilo.models.checksystem_request import CheckRequest, PutRequest, GetRequest
 from gornilo.models.verdict import Verdict
@@ -34,7 +37,7 @@ class Checker:
         func_arg_name = func_args_spec.args[0]
         func_arg_type = func_args_spec.annotations.get(func_arg_name)
 
-        if func_arg_type != func_type:
+        if not issubclass(func_arg_type, func_type):
             raise TypeError(f"{func_name} first arg should be typed as {func_type}")
 
     def __register_action(self, action_name: str, action: callable, action_period: int = None):
@@ -102,7 +105,7 @@ class Checker:
         return wrapper
 
     def __extract_info_call(self):
-        return "vulns: " + ':'.join(str(self.__info_distribution[key]) for key in sorted(self.__info_distribution))
+        return VULNS + VULNS_SEP.join(str(self.__info_distribution[key]) for key in sorted(self.__info_distribution))
 
     def define_get(self, vuln_num: int) -> callable:
         if not isinstance(vuln_num, int) or vuln_num < 1:
@@ -118,6 +121,29 @@ class Checker:
         if asyncio.iscoroutine(func_result):
             return asyncio.run(func_result)
         return func_result
+
+    def __try_extract_public_flag_id(self, request_content: dict) -> dict or None:
+        try:
+            request_content = copy(request_content)
+
+            flag_id = request_content["flag_id"]
+            json_flag_id = json.loads(flag_id)
+
+            public_flag_id = json_flag_id.pop(PUBLIC_FLAG_ID)
+            private_flag_id = json_flag_id.pop(PRIVATE_CONTENT)
+
+            request_content[PUBLIC_FLAG_ID] = public_flag_id
+
+            if not isinstance(private_flag_id, str):
+                private_flag_id = json.dumps(private_flag_id)
+
+            request_content["flag_id"] = private_flag_id
+
+            return request_content
+        except Exception:
+            # any exception here means something gone wrong with json;
+            # should fallback to legacy models
+            return None
 
     # noinspection PyProtectedMember
     def run(self, *args):
@@ -199,6 +225,7 @@ class Checker:
             return self.__async_wrapper(put_func(PutRequest(**request_content)))
 
         if command == GET:
-            return self.__async_wrapper(get_func(GetRequest(**request_content)))
+            result = self.__try_extract_public_flag_id(request_content)
+            return self.__async_wrapper(get_func(GetRequest(**(result or request_content))))
 
         raise RuntimeError("Something gone wrong with checker scenario :(")

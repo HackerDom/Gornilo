@@ -1,4 +1,5 @@
 from gornilo.models.verdict.verdict_codes import *
+from gornilo.models.verdict.api_constants import *
 import json
 
 
@@ -9,8 +10,8 @@ class Verdict:
         self._public_message: str = public_message
 
     @staticmethod
-    def OK_WITH_FLAG_ID(public_flag_id: str, private_content: str):
-        return Verdict(OK, json.dumps({"public_flag_id": public_flag_id, "private_content": private_content}))
+    def OK_WITH_FLAG_ID(public_flag_id: str, flag_id: str):
+        return Verdict(OK, json.dumps({PUBLIC_FLAG_ID: public_flag_id, PRIVATE_CONTENT: flag_id}))
 
     @staticmethod
     def OK(flag_id: str = ''):
