@@ -7,8 +7,7 @@ checker = NewChecker()
 @checker.define_check
 async def check_service(request: CheckRequest) -> Verdict:
     ...  # your code
-    data = requests_with_retries().get("http://ya.ru")
-    print(data.request.headers, data.text)
+    requests_with_retries().get(f"http://{request.hostname}")
 
     return Verdict.OK()
 

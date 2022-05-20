@@ -2,7 +2,9 @@ import asyncio
 import inspect
 import sys
 import json
-from contextlib import redirect_stdout
+import socket
+
+from contextlib import redirect_stdout, suppress
 from traceback import format_exc
 from typing import Dict, Callable
 from copy import copy
@@ -11,6 +13,9 @@ from gornilo.models.verdict.api_constants import *
 from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 from gornilo.models.checksystem_request import CheckRequest, PutRequest, GetRequest
 from gornilo.models.verdict import Verdict
+
+with suppress(ImportError):
+    import requests
 
 
 class Checker:
@@ -58,11 +63,15 @@ class Checker:
         from uuid import uuid4
         import subprocess
 
+        return_codes = []
+
         with measure(CHECK):
             check_result = subprocess.run([sys.executable, sys.argv[0], CHECK, team_ip], text=True, capture_output=True)
         print(f"Check completed with {check_result.returncode} exitcode, "
               f"stdout: {check_result.stdout}, "
               f"stderr: {check_result.stderr}")
+
+        return_codes.append(check_result.returncode)
 
         vulns_amount = len(subprocess.run([sys.executable, sys.argv[0], INFO],
                                           text=True, capture_output=True).stdout.split(":")) - 1
@@ -79,6 +88,8 @@ class Checker:
                   f"stdout: {put_result.stdout}, "
                   f"stderr: {put_result.stderr}")
 
+            return_codes.append(put_result.returncode)
+
             if put_result.stdout:
                 flag_id = put_result.stdout
             with measure(f"{GET} vuln {i + 1}"):
@@ -87,6 +98,11 @@ class Checker:
             print(f"{GET} exited with {get_result.returncode}, "
                   f"stdout: {get_result.stdout}, "
                   f"stderr: {get_result.stderr}")
+
+            return_codes.append(put_result.returncode)
+
+        print(f"All return codes: {return_codes}, using max as a return value. 101 transforms to 0")
+        return max(return_codes)
 
     def define_check(self, func: callable) -> callable:
         self.__check_function(func, CheckRequest)
@@ -160,6 +176,15 @@ class Checker:
         except Exception as e:
             print(f"Checker caught an error: {e},\n {format_exc()}", file=sys.stderr)
             result = Verdict.CHECKER_ERROR("")
+
+            if isinstance(e, socket.timeout):
+                result = Verdict.DOWN("Socket timeout")
+
+            if "requests" in globals() and any(isinstance(e, exc) for exc in (
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                    requests.exceptions.TooManyRedirects)):
+                result = Verdict.DOWN("Could not process routine due to timeout or connection error!")
         finally:
             if result._public_message:
                 print(result._public_message, file=sys.stdout)
@@ -192,8 +217,8 @@ class Checker:
             return self.__async_wrapper(check_func(CheckRequest(**request_content)))
 
         if command == TEST:
-            self.__run_tests(hostname)
-            return Verdict(0, "Tests has been finished")
+            return_code = self.__run_tests(hostname)
+            return Verdict(0 if return_code == 101 else return_code, "Tests has been finished")
 
         if flag_id is None:
             raise ValueError("Can't find 'flag_id' arg! (Expected 3 or more args)")
