@@ -13,7 +13,7 @@ def generate_flag():
 def measure(action_name: str) -> None:
     start = time()
     prefix = f"[{action_name}] " if action_name else None
-    print(prefix + f"Measure has been started at {start}.")
+    print(prefix + f"Measure has been started!")
     try:
         yield None
     finally:
