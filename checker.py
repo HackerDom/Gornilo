@@ -3,12 +3,15 @@ from gornilo.http_clients import requests_with_retries
 
 checker = NewChecker()
 
+from logging import getLogger
+print = getLogger().info
+
 
 @checker.define_check
 async def check_service(request: CheckRequest) -> Verdict:
     ...  # your code
     requests_with_retries().get(f"http://{request.hostname}")
-
+    print("Another log")
     return Verdict.OK()
 
 

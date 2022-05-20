@@ -1,7 +1,6 @@
 from gornilo.actions import Checker
 from typing import Type, List
 from gornilo.sub_checker import VulnChecker
-from gornilo.setup_logging import setup_logging
 
 
 class NewChecker(Checker):
@@ -34,5 +33,4 @@ class NewChecker(Checker):
         return super()._Checker__extract_info_call() + f"\n{', '.join(self.__flag_id_description)}\n"
 
     def run(self, *args):
-        setup_logging()
         super(NewChecker, self).run(*args)

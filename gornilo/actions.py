@@ -13,6 +13,8 @@ from gornilo.models.verdict.api_constants import *
 from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 from gornilo.models.checksystem_request import CheckRequest, PutRequest, GetRequest
 from gornilo.models.verdict import Verdict
+from gornilo.setup_logging import setup_logging
+
 
 with suppress(ImportError):
     import requests
@@ -163,6 +165,7 @@ class Checker:
 
     # noinspection PyProtectedMember
     def run(self, *args):
+        setup_logging()
         result = Verdict.CHECKER_ERROR("Something gone wrong")
         try:
             if not args:
@@ -253,4 +256,4 @@ class Checker:
             result = self.__try_extract_public_flag_id(request_content)
             return self.__async_wrapper(get_func(GetRequest(**(result or request_content))))
 
-        raise RuntimeError("Something gone wrong with checker scenario :(")
+        raise RuntimeError("Something went wrong with checker scenario :(")
