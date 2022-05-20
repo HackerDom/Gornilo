@@ -2,7 +2,9 @@ import asyncio
 import inspect
 import sys
 import json
-from contextlib import redirect_stdout
+import socket
+
+from contextlib import redirect_stdout, suppress
 from traceback import format_exc
 from typing import Dict, Callable
 from copy import copy
@@ -11,6 +13,9 @@ from gornilo.models.verdict.api_constants import *
 from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 from gornilo.models.checksystem_request import CheckRequest, PutRequest, GetRequest
 from gornilo.models.verdict import Verdict
+
+with suppress(ImportError):
+    import requests
 
 
 class Checker:
@@ -160,6 +165,15 @@ class Checker:
         except Exception as e:
             print(f"Checker caught an error: {e},\n {format_exc()}", file=sys.stderr)
             result = Verdict.CHECKER_ERROR("")
+
+            if isinstance(e, socket.timeout):
+                result = Verdict.DOWN("Socket timeout")
+
+            if "requests" in globals() and any(isinstance(e, exc) for exc in (
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout,
+                    requests.exceptions.TooManyRedirects)):
+                result = Verdict.DOWN("Could not process routine due to timeout or connection error!")
         finally:
             if result._public_message:
                 print(result._public_message, file=sys.stdout)
