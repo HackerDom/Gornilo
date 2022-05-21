@@ -9,7 +9,7 @@ from traceback import format_exc
 from typing import Dict, Callable
 from copy import copy
 
-from gornilo.models.verdict.api_constants import *
+from gornilo.models.api_constants import *
 from gornilo.models.action_names import INFO, CHECK, PUT, GET, TEST
 from gornilo.models.checksystem_request import CheckRequest, PutRequest, GetRequest
 from gornilo.models.verdict import Verdict
@@ -75,8 +75,8 @@ class Checker:
 
         return_codes.append(check_result.returncode)
 
-        vulns_amount = len(subprocess.run([sys.executable, sys.argv[0], INFO],
-                                          text=True, capture_output=True).stdout.split(":")) - 1
+        info_response = subprocess.run([sys.executable, sys.argv[0], INFO], text=True, capture_output=True).stdout
+        vulns_amount = len(info_response.split("\n")[0].split(":")) - 1
 
         for i in range(vulns_amount):
 

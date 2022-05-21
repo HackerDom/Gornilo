@@ -1,5 +1,5 @@
 from gornilo.models.verdict.verdict_codes import *
-from gornilo.models.verdict.api_constants import *
+from gornilo.models.api_constants import *
 import json
 
 

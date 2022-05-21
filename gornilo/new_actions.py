@@ -1,6 +1,7 @@
 from gornilo.actions import Checker
 from typing import Type, List
 from gornilo.sub_checker import VulnChecker
+from gornilo.models import api_constants
 
 
 class NewChecker(Checker):
@@ -30,7 +31,8 @@ class NewChecker(Checker):
 
     # noinspection PyPep8Naming,PyMethodMayBeStatic,PyUnresolvedReferences,PyProtectedMember
     def _Checker__extract_info_call(self):
-        return super()._Checker__extract_info_call() + f"\n{', '.join(self.__flag_id_description)}\n"
+        return super()._Checker__extract_info_call() +\
+               f"\n{api_constants.FLAG_DESCRIPTION_KEY}{', '.join(self.__flag_id_description)}\n"
 
     def run(self, *args):
         super(NewChecker, self).run(*args)
