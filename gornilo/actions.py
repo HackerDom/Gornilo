@@ -101,7 +101,7 @@ class Checker:
                   f"stdout: {get_result.stdout}, "
                   f"stderr: {get_result.stderr}")
 
-            return_codes.append(put_result.returncode)
+            return_codes.append(get_result.returncode)
 
         print(f"All return codes: {return_codes}, using max as a return value. 101 transforms to 0")
         return max(return_codes)
