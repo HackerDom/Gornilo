@@ -36,13 +36,13 @@ If service has multiple flag types you must implement `PUT` and `GET` method for
 
 So for service with two flag types checker must implement next methods:
 ```
-__CHECK__ - check all service functionality
+CHECK - check all service functionality
 
-__PUT_1__ - put flag of firts type
-__GET_1__ - check that service still has flag
+PUT_1 - put flag of firts type
+GET_1 - check that service still has flag
 
-__PUT_2__ - put flag of second type
-__GET_2__ - check that service still has flag
+PUT_2 - put flag of second type
+GET_2 - check that service still has flag
 ```
 Checker runs `CHECK` `PUT_i` `GET_i` sequence for each team seperatly.
 
