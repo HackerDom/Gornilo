@@ -70,7 +70,7 @@ Let's implement simple checker for abstract service
 ```python
 @checker.define_check # every checker method should be wrapped with decorator checker.define_...
 async def check_service(request: CheckRequest) -> Verdict:
-    user = 'Bob'
+    user = 'Draco'
 
     url = f"http://{request.hostname}/register/{user}" #request.hostname - address of checking team's service in host:port format
 
