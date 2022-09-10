@@ -104,7 +104,7 @@ class FirstVuln(VulnChecker):
 Implement some logic for clarity
 
 ```python
-#flag flag_id_description - hint for players, vuln_rate - flag rate
+#flag_id_description - hint for players, vuln_rate - flag rate
 @checker.define_vuln(flag_id_description="flag_id is user", vuln_rate=1)
 class FirstVuln(VulnChecker):
     @staticmethod
