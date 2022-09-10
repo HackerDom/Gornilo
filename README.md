@@ -60,7 +60,7 @@ Checker methods must complete with one of next verdicts:
 Flag rate is an option adjusting how many flags of this type, put in the service per round. In general various flag types are implements for various vulnarabilities, that vary in complexity. With __flag rate__ you can put more flag to difficult vuln and less to easy.
 
 #### Flag id
-Flag id - all data you need to get thed flag, for example username+password. Passed from `PUT` to `GET` methods. 
+Flag id - all data you need to get the flag, for example username+password. Passed from `PUT` to `GET` methods. 
 
 #### Public flag Id
 Public flag id is a feature simplifying service implementation. In most cases attacker must knows ids of entities of your service. So you need implement additional handler for listing, and check this handler in __CHECK__ method. Public flag id allows you to pass such ids with verdict, then attacker can list its from checksystem api.
