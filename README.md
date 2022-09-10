@@ -67,7 +67,7 @@ Public flag id is a feature simplifying service implementation. In most cases at
 
 ### Example
 Let's implement simple checker for abstract service
-```
+```python
 @checker.define_check # every checker method should be wrapped with decorator checker.define_...
 async def check_service(request: CheckRequest) -> Verdict:
     user = 'Bob'
@@ -83,7 +83,7 @@ async def check_service(request: CheckRequest) -> Verdict:
 ```
 
 Next we need `PUT` + `GET` method pair, they should look like:
-```
+```python
 #flag flag_id_description - hint for players, vuln_rate - flag rate
 @checker.define_vuln(flag_id_description="flag_id is user", vuln_rate=1)
 class FirstVuln(VulnChecker):
@@ -103,7 +103,7 @@ class FirstVuln(VulnChecker):
 
 Implement some logic for clarity
 
-```
+```python
 #flag flag_id_description - hint for players, vuln_rate - flag rate
 @checker.define_vuln(flag_id_description="flag_id is user", vuln_rate=1)
 class FirstVuln(VulnChecker):
