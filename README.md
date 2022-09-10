@@ -56,14 +56,14 @@ Checker methods must complete with one of next verdicts:
 `GET` method has one more verdict
 * `CORRUPT` - service has no flag or flag is incorrect
 
-#### Flag Rate
-__Flag rate__ is an option adjusting how many flags of this type, put in the service per round. In general various flag types are implements for various vulnarabilities, that vary in complexity. With __flag rate__ you can put more flag to difficult vuln and less to easy.
+#### Flag Rate aka Vuln Rate
+Flag rate is an option adjusting how many flags of this type, put in the service per round. In general various flag types are implements for various vulnarabilities, that vary in complexity. With __flag rate__ you can put more flag to difficult vuln and less to easy.
 
 #### Flag id
-__Flag id__ - all data you need to get thed flag, for example username+password. Passed from `PUT` to `GET` methods. 
+Flag id - all data you need to get thed flag, for example username+password. Passed from `PUT` to `GET` methods. 
 
 #### Public flag Id
-__Public flag id__ is a feature simplifying service implementation. In most cases attacker must knows ids of entities of your service. So you need implement additional handler for listing, and check this handler in __CHECK__ method. Public flag id allows you to pass such ids with verdict, then attacker can list its from checksystem api.
+Public flag id is a feature simplifying service implementation. In most cases attacker must knows ids of entities of your service. So you need implement additional handler for listing, and check this handler in __CHECK__ method. Public flag id allows you to pass such ids with verdict, then attacker can list its from checksystem api.
 
 ### Example
 Let's implement simple checker for abstract service
