@@ -4,7 +4,7 @@ import json
 
 
 # noinspection PyPep8Naming
-class Verdict:
+class Verdict(BaseException):
     def __init__(self, code: int, public_message: str = ''):
         self._code: int = code
         self._public_message: str = public_message

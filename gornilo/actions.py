@@ -176,6 +176,8 @@ class Checker:
             if type(result) != Verdict:
                 print(f"Checker function returned not Verdict value, we need to fix it!", file=sys.stderr)
                 result = Verdict.CHECKER_ERROR("")
+        except Verdict as verdict:
+            result = verdict
         except Exception as e:
             print(f"Checker caught an error: {e},\n {format_exc()}", file=sys.stderr)
             result = Verdict.CHECKER_ERROR("")
