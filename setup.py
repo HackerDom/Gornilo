@@ -3,9 +3,11 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+VERSION = "1.0.0"
+
 setuptools.setup(
     name="gornilo",
-    version="0.9.3",
+    version=VERSION,
     author="rx00",
     author_email="rx00@hackerdom.com",
     description="AD CTFs checker wrapper",
