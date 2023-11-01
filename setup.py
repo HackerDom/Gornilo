@@ -3,7 +3,7 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 setuptools.setup(
     name="gornilo",
